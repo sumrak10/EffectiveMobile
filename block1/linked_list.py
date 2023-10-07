@@ -41,7 +41,10 @@ class LinkedList:
     def remove_obj(self) -> None:
         if self.tail is not None:
             self.tail = self.tail.get_prev()
-            self.tail.set_next(None)
+            if self.tail is not None:
+                self.tail.set_next(None)
+            else:
+                self.head = None
 
     def get_data(self) -> list[str]:
         elem = self.head

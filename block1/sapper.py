@@ -32,54 +32,51 @@ class GamePole:
         self.game_over = False
 
         # init pole
-        for i in range(size):
-            row = []
-            for j in range(size):
-                row.append(Cell())
-            self.pole.append(row)
+        self.pole = [[Cell() for col in range(size)] for row in range(size)]
         
         # place random mines
-        for _ in range(mines_count):
-            while True:
-                x = random.randint(0,size-1)
-                y = random.randint(0,size-1)
-                if self.pole[x][y].mine == False:
-                    self.pole[x][y].mine = True
-                    around_coods = [[x-1,y-1],[x-1,y],[x-1,y+1],
-                                    [x,y-1],           [x,y+1],
-                                    [x+1,y-1],[x+1,y],[x+1,y+1]]
-                    for coords in around_coods:
-                        if coords[0] < 0 or coords[1] < 0:
-                            continue
-                        try:
-                            self.pole[coords[0]][coords[1]].around_mines_count += 1
-                        except IndexError:
-                            pass
-                    break
+        mines_coords = [(random.randint(0,size-1),random.randint(0,size-1)) for _ in range(mines_count)]
+        for row,col in mines_coords:
+            self.pole[row][col].mine = True
         
+        for row in range(size):
+            for col in range(size):
+                self.pole[row][col].around_mines_count = self.get_around_mines(row, col)
+
+    def get_around_mines(self, i, j):
+        n = 0
+        for k in range(-1, 2):
+            for l in range(-1, 2):
+                ii, jj = k + i, l + j
+                if ii < 0 or jj < 0 or ii >= self.size or jj >= self.size:
+                    continue
+                if self.pole[ii][jj].mine:
+                    n += 1
+        return n
+
     def show(self, cx:int = None, cy:int = None) -> None:
         '''
         Отображение игрового поля в консоли
         '''
         os.system('cls')
-        for x in range(self.size):
-            for y in range(self.size):
+        for row in range(self.size):
+            for col in range(self.size):
                 if cx is not None and cy is not None:
-                    if cx == x and cy == y:
+                    if cx == row and cy == col:
                         print(' x ', end='')
                     else:
-                        print(f" {self.pole[x][y]} ", end='')
+                        print(f" {self.pole[row][col]} ", end='')
                 else:
-                    print(f" {self.pole[x][y]} ", end='')
+                    print(f" {self.pole[row][col]} ", end='')
             print()
 
-    def open_cells(self, x:int, y:int) -> None:
+    def open_cells(self, row:int, col:int) -> None:
         '''
         Рекурсивный алгоритм который открывает все клетки число мин вокруг которых равно 0
         '''
-        around_coods_with_center = [[x-1,y-1],[x-1,y],[x-1,y+1],
-                        [x,y-1], [x,y],  [x,y+1],
-                        [x+1,y-1],[x+1,y],[x+1,y+1]]
+        around_coods_with_center = [[row-1,col-1],[row-1,col],[row-1,col+1],
+                        [row,col-1], [row,col],  [row,col+1],
+                        [row+1,col-1],[row+1,col],[row+1,col+1]]
         for coords in around_coods_with_center:
             if coords[0] < 0 or coords[1] < 0:
                 continue
@@ -99,32 +96,32 @@ class GamePole:
         Метод проверяющий условия выигрыша
         '''
         count_open_cells = True
-        for x in range(self.size):
-            for y in range(self.size):
-                if self.pole[x][y].open:
+        for row in range(self.size):
+            for col in range(self.size):
+                if self.pole[row][col].open:
                     count_open_cells += 1
         if count_open_cells == self.size**2-self.mines_count:
             self.game_over = True
             self.show()
             print('Вы выиграли!')
 
-    def player_turn(self, x: int, y: int) -> None:
+    def player_turn(self, row: int, col: int) -> None:
         '''
         Метод который выполняет проверку выполненных пользователем действий
         Так же на основе этих действий происходит запуск остальных методов
         '''
-        if x > self.size or y > self.size:
-            print(f'Введены некорректные значения. Значения должны быть в пределах 0 < x < {self.size}')
+        if row > self.size or col > self.size:
+            print(f'Введены некорректные значения. Значения должны быть в пределах 0 < row < {self.size}')
             return None
         
-        if self.pole[x][y].mine == True:
+        if self.pole[row][col].mine == True:
             self.game_over = True
             print('Вы наступили на мину!')
             return None
         
-        self.pole[x][y].open = True
-        if self.pole[x][y].around_mines_count == 0:
-            self.open_cells(x,y)
+        self.pole[row][col].open = True
+        if self.pole[row][col].around_mines_count == 0:
+            self.open_cells(row,col)
         self.check_win()
 
 if __name__ == '__main__':
