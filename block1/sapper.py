@@ -43,7 +43,7 @@ class GamePole:
             for col in range(size):
                 self.pole[row][col].around_mines_count = self.get_around_mines(row, col)
 
-    def get_around_mines(self, i, j):
+    def get_around_mines(self, i: int, j: int) -> int:
         n = 0
         for k in range(-1, 2):
             for l in range(-1, 2):
