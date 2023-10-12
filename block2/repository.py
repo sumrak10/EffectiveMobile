@@ -1,5 +1,5 @@
 from typing import Any
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 from sqlalchemy import insert, select, update, delete, desc
@@ -10,7 +10,13 @@ from schemas import SpimexTradingResultSchema
 
 
 class AbstractRepository(ABC):
-    pass
+    @abstractmethod
+    def add_one(self, data: dict) -> int:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_all(self) -> list:
+        raise NotImplementedError
 
 
 class SQLAlchemyRepository(AbstractRepository):
